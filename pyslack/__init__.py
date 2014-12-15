@@ -1,6 +1,6 @@
 import logging
 import requests
-
+import json
 
 class SlackError(Exception):
     pass
@@ -8,7 +8,7 @@ class SlackError(Exception):
 
 class SlackClient(object):
 
-    BASE_URL = 'https://slack.com/api'
+    BASE_URL = 'https://hooks.slack.com/services/'
 
     def __init__(self, token):
         self.token = token
@@ -19,11 +19,10 @@ class SlackClient(object):
         Note: Ignoring SSL cert validation due to intermittent failures
         http://requests.readthedocs.org/en/latest/user/advanced/#ssl-cert-verification
         """
-        url = "%s/%s" % (SlackClient.BASE_URL, method)
-        params['token'] = self.token
-        result = requests.post(url, data=params, verify=False).json()
-        if not result['ok']:
-            raise SlackError(result['error'])
+        url = "%s/%s" % (SlackClient.BASE_URL, self.token)
+        result = requests.post(url, data={"payload": json.dumps(params)}, verify=False)
+        # if not result['ok']:
+        #     raise SlackError(result['error'])
         return result
 
     def chat_post_message(self, channel, text, **params):
